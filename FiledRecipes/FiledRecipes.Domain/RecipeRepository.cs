@@ -127,5 +127,84 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
+        public void load()
+        {
+            List<IRecipe> recipes = new List<IRecipe>();
+            Recipe fullRecipe = null;
+            RecipeReadStatus recipeReadStatus = new RecipeReadStatus();
+            using (StreamReader reader = new StreamReader(_path, System.Text.Encoding.UTF8)) //öppnar textfilen för att läsas
+            {
+                string line;
+                while ((line = reader.ReadLine()) !=null)
+                {
+                    switch(line)
+                    {
+                        case SectionRecipe: // SectionRecipe / ingredients / instruktions är konstanter skapade innan.
+                            recipeReadStatus = RecipeReadStatus.New;
+                            continue;
+                        case SectionIngredients:
+                            recipeReadStatus = RecipeReadStatus.Ingredient;
+                            continue;
+                        case SectionInstructions:
+                            recipeReadStatus = RecipeReadStatus.Instruction;
+                            continue;
+                    }
+                    if (line !="")
+                    {
+                        switch (recipeReadStatus)
+                        {
+                            case RecipeReadStatus.New: // Skapar ett nytt receptobjekt med receptets namn.
+                                fullRecipe = new Recipe(line);
+                                recipes.Add(fullRecipe);
+                                break;
+                            case RecipeReadStatus.Ingredient: //Delar upp texten genom att använda split vid ; i stringklassen
+                                string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
+                                if (ingredients.Length % 3 !=0) // Om inte talet blir 3 kastas undantag
+                                {
+                                    throw new FileFormatException();
+                                }//Skapar ett objekt med ingredienser och visar i mängd mått o namn.
+                                Ingredient ingredient = new Ingredient();
+                                ingredient.Amount = ingredients[0]; // 0 för att mängden ska skrivas först
+                                ingredient.Measure = ingredients[1]; // 1 för måttet
+                                ingredient.Name = ingredients[2];  // för namnet.
+                                fullRecipe.Add(ingredient);
+                                break;
+                            case RecipeReadStatus.Instruction: // Lägger till instruktionerna
+                                fullRecipe.Add(line);
+                                break;
+                            case RecipeReadStatus.Indefinite: // Blir ngt fel kastas undantaget nedan.
+                                throw new FileFormatException();
+                        }
+                    }
+                }
+                recipes.TrimExcess(); // tar bort det tomma i arrayen.
+                _recipes = recipes.OrderBy(recipe => recipe.Name).ToList(); // Sorterar listan baserad på namnen. Tilldelar en referens till listan i  fältet i _recipes.
+                IsModified = false; // tilldelar att listan är oförändrad.
+                OnRecipesChanged(EventArgs.Empty); //när receptet startas skickas detta med
+            }
+        }
+        public void save() // Koden nedan är för att man ska kunna spara recept.
+        {
+            using (StreamWriter writer = new StreamWriter(_path))
+            {
+                foreach (Recipe recipe in _recipes) // För varje recept i _recipes skriv recepten.
+                {
+                    writer.WriteLine(SectionRecipe); // SKriver recptets namn
+                    writer.WriteLine(recipe.Name);
+                    writer.WriteLine(SectionIngredients); // Skriver ingredienserna.
+                    foreach(Ingredient ingredient in recipe.Ingredients)
+                    {
+                        writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name); // 0 = mängd 1 = mått 2  namn
+                    }
+                    writer.WriteLine(SectionInstructions); // Skriver instruktionerna.
+                    foreach (string instructions in recipe.Instructions)  // för varje instruktion i recipe.Instructions skriv instruktionerna.
+                    {
+                        writer.WriteLine(instructions);
+                    }
+                }
+                IsModified = false;
+                OnRecipesChanged(EventArgs.Empty);
+            }
+        }
     }
 }
