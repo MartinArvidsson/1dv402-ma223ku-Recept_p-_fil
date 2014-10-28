@@ -132,7 +132,7 @@ namespace FiledRecipes.Domain
             List<IRecipe> recipes = new List<IRecipe>();
             Recipe fullRecipe = null;
             RecipeReadStatus recipeReadStatus = new RecipeReadStatus();
-            using (StreamReader reader = new StreamReader(_path, System.Text.Encoding.UTF8)) //öppnar textfilen för att läsas
+            using (StreamReader reader = new StreamReader(_path)) //öppnar textfilen för att läsas
             {
                 string line;
                 while ((line = reader.ReadLine()) !=null)
