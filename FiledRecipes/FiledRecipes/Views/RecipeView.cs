@@ -12,5 +12,30 @@ namespace FiledRecipes.Views
     /// </summary>
     public class RecipeView : ViewBase, IRecipeView
     {
+        public void Show(IRecipe recipe) //Visar 1 recept
+        {
+            Header = recipe.Name;
+            ShowHeaderPanel();
+            Console.WriteLine("\nIngredienser\n-------");
+            foreach(Ingredient ingredient in recipe.Ingredients)
+            {
+                Console.WriteLine(ingredient);
+            }
+            int instructionPart = 1;
+            Console.WriteLine("\nGör så här\n---------");
+            foreach(string instruction in recipe.Instructions)
+            {
+                Console.WriteLine("<{0}>\n {1}", instructionPart,instruction);
+                instructionPart++;
+            }
+        }
+        public void Show(IEnumerable<IRecipe> recipes) // Visar alla recept.
+        {
+            foreach(Recipe recipe in recipes)
+            {
+                Show(recipe);
+                ContinueOnKeyPressed();
+            }
+        }
     }
 }

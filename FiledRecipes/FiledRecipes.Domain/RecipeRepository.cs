@@ -127,7 +127,7 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
-        public void load()
+        public void Load()
         {
             List<IRecipe> recipes = new List<IRecipe>();
             Recipe fullRecipe = null;
@@ -183,7 +183,7 @@ namespace FiledRecipes.Domain
                 OnRecipesChanged(EventArgs.Empty); //när receptet startas skickas detta med
             }
         }
-        public void save() // Koden nedan är för att man ska kunna spara recept.
+        public void Save() // Koden nedan är för att man ska kunna spara recept.
         {
             using (StreamWriter writer = new StreamWriter(_path))
             {
