@@ -127,14 +127,14 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
-        public void Load()
+        public void Load() // Void == retunerar inget.
         {
             List<IRecipe> recipes = new List<IRecipe>();
             Recipe fullRecipe = null;
             RecipeReadStatus recipeReadStatus = new RecipeReadStatus();
             using (StreamReader reader = new StreamReader(_path)) //öppnar textfilen för att läsas
             {
-                string line;
+                string line; // Skapar en stringvariabel med namnet line.
                 while ((line = reader.ReadLine()) !=null)
                 {
                     switch(line)
@@ -154,9 +154,9 @@ namespace FiledRecipes.Domain
                         switch (recipeReadStatus)
                         {
                             case RecipeReadStatus.New: // Skapar ett nytt receptobjekt med receptets namn.
-                                fullRecipe = new Recipe(line);
+                                fullRecipe = new Recipe(line); // skapar ett recept i ordningen som visas i "string"
                                 recipes.Add(fullRecipe);
-                                break;
+                                break; // bryter och lämnar switch
                             case RecipeReadStatus.Ingredient: //Delar upp texten genom att använda split vid ; i stringklassen
                                 string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
                                 if (ingredients.Length % 3 !=0) // Om inte talet blir 3 kastas undantag
@@ -168,12 +168,12 @@ namespace FiledRecipes.Domain
                                 ingredient.Measure = ingredients[1]; // 1 för måttet
                                 ingredient.Name = ingredients[2];  // för namnet.
                                 fullRecipe.Add(ingredient);
-                                break;
+                                break; //Bryter o lämnar switch
                             case RecipeReadStatus.Instruction: // Lägger till instruktionerna
                                 fullRecipe.Add(line);
-                                break;
+                                break; //bryter o lämnar switch
                             case RecipeReadStatus.Indefinite: // Blir ngt fel kastas undantaget nedan.
-                                throw new FileFormatException();
+                                throw new FileFormatException(); //undantag
                         }
                     }
                 }
@@ -203,7 +203,7 @@ namespace FiledRecipes.Domain
                     }
                 }
                 IsModified = false;
-                OnRecipesChanged(EventArgs.Empty);
+                OnRecipesChanged(EventArgs.Empty); //Basklassen för data är tom om ett recept har ändrats.
             }
         }
     }
