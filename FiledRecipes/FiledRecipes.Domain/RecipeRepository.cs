@@ -130,7 +130,7 @@ namespace FiledRecipes.Domain
         public void Load() // Void == retunerar inget.
         {
             List<IRecipe> recipes = new List<IRecipe>();
-            Recipe fullRecipe = null;
+            Recipe AllRecipies = null;
             RecipeReadStatus recipeReadStatus = new RecipeReadStatus();
             using (StreamReader reader = new StreamReader(_path)) //öppnar textfilen för att läsas
             {
@@ -154,8 +154,8 @@ namespace FiledRecipes.Domain
                         switch (recipeReadStatus)
                         {
                             case RecipeReadStatus.New: // Skapar ett nytt receptobjekt med receptets namn.
-                                fullRecipe = new Recipe(line); // skapar ett recept i ordningen som visas i "string"
-                                recipes.Add(fullRecipe);
+                                AllRecipies = new Recipe(line); // skapar ett recept i ordningen som visas i "string"
+                                recipes.Add(AllRecipies);
                                 break; // bryter och lämnar switch
                             case RecipeReadStatus.Ingredient: //Delar upp texten genom att använda split vid ; i stringklassen
                                 string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
@@ -167,10 +167,10 @@ namespace FiledRecipes.Domain
                                 ingredient.Amount = ingredients[0]; // 0 för att mängden ska skrivas först
                                 ingredient.Measure = ingredients[1]; // 1 för måttet
                                 ingredient.Name = ingredients[2];  // för namnet.
-                                fullRecipe.Add(ingredient);
+                                AllRecipies.Add(ingredient);
                                 break; //Bryter o lämnar switch
                             case RecipeReadStatus.Instruction: // Lägger till instruktionerna
-                                fullRecipe.Add(line);
+                                AllRecipies.Add(line);
                                 break; //bryter o lämnar switch
                             case RecipeReadStatus.Indefinite: // Blir ngt fel kastas undantaget nedan.
                                 throw new FileFormatException(); //undantag
