@@ -127,83 +127,86 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
-        public void Load() // Void == retunerar inget.
+        public void Load() // Public void som heter Load
         {
-            List<IRecipe> recipes = new List<IRecipe>();
-            Recipe AllRecipies = null;
-            RecipeReadStatus recipeReadStatus = new RecipeReadStatus();
-            using (StreamReader reader = new StreamReader(_path)) //öppnar textfilen för att läsas
+            List<IRecipe> recipes = new List<IRecipe>(); // Skapar ett listobjekt av interfacet <IRecipe>
+            Recipe aRecipe = null; // aRecipe är = 0
+            RecipeReadStatus recipeReadStatus = new RecipeReadStatus(); // Nytt objekt som heter recipeReadStatus skapas av RecipeReadStatus.  
+            using (StreamReader reader = new StreamReader(_path)) //öppnar textfilen för att läsas via _path
             {
                 string line; // Skapar en stringvariabel med namnet line.
-                while ((line = reader.ReadLine()) !=null)
+                while ((line = reader.ReadLine()) != null) //När programmet läser o raden INTE är tom:
                 {
-                    switch(line)
+                    switch(line) //går hit
                     {
-                        case SectionRecipe: // SectionRecipe / ingredients / instruktions är konstanter skapade innan.
-                            recipeReadStatus = RecipeReadStatus.New;
-                            continue;
-                        case SectionIngredients:
-                            recipeReadStatus = RecipeReadStatus.Ingredient;
-                            continue;
-                        case SectionInstructions:
-                            recipeReadStatus = RecipeReadStatus.Instruction;
-                            continue;
+                        case SectionRecipe: // Rad 16
+                            recipeReadStatus = RecipeReadStatus.New; // Öppnar nytt för att läsa.
+                            continue; //Fortsätter och går tillbaka till while loopen
+                        case SectionIngredients: // Rad 21
+                            recipeReadStatus = RecipeReadStatus.Ingredient; // Öppnar nytt för att läsa ingredienserna 
+                            continue;//fortsätter och går tillbaka till while loopen
+                        case SectionInstructions: // Rad 26
+                            recipeReadStatus = RecipeReadStatus.Instruction; //Öppnar nytt för att läsa instruktionerna
+                            continue; //Fortsätter och går tillbaka till while loopen
                     }
-                    if (line !="")
+                    if (line != "") // Om raden INTE är tom
                     {
-                        switch (recipeReadStatus)
+                        switch (recipeReadStatus) // Gör sig "redo" för att läsa
                         {
                             case RecipeReadStatus.New: // Skapar ett nytt receptobjekt med receptets namn.
-                                AllRecipies = new Recipe(line); // skapar ett recept i ordningen som visas i "string"
-                                recipes.Add(AllRecipies);
-                                break; // bryter och lämnar switch
+                                aRecipe = new Recipe(line); // aRecipe får värdet som (line) just nu håller.
+                                recipes.Add(aRecipe); // Lägger till lines värde via aRecipe till recipies via .add
+                                break; // bryter och går tillbaka till while
                             case RecipeReadStatus.Ingredient: //Delar upp texten genom att använda split vid ; i stringklassen
-                                string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
-                                if (ingredients.Length % 3 !=0) // Om inte talet blir 3 kastas undantag
+                                string[] ingredients = line.Split(';'); //Skapar en string-array för ingredienserna. Delar upp 4,5;dl;filmjölk efter ;
+                                if (ingredients.Length % 3 !=0) // Om inte Arrayen  blir 3 lång kastas ett undantag
                                 {
-                                    throw new FileFormatException();
+                                    throw new FileFormatException(); // Undantag kastas
                                 }//Skapar ett objekt med ingredienser och visar i mängd mått o namn.
-                                Ingredient ingredient = new Ingredient();
-                                ingredient.Amount = ingredients[0]; // 0 för att mängden ska skrivas först
+                                Ingredient ingredient = new Ingredient(); // Instansierar nytt ingredient objekt
+                                ingredient.Amount = ingredients[0]; //  Mängden ingredienser får platsen 0 i arrayen
                                 ingredient.Measure = ingredients[1]; // 1 för måttet
-                                ingredient.Name = ingredients[2];  // för namnet.
-                                AllRecipies.Add(ingredient);
-                                break; //Bryter o lämnar switch
+                                ingredient.Name = ingredients[2];  //   2 för namnet.
+                                aRecipe.Add(ingredient); // aRecipe får värdet av "ingredient, vilket är [0] [1] [2]
+                                break; //Bryter o går illbaka till första while och loopar tills ALLA ingredienser är tillagda.
                             case RecipeReadStatus.Instruction: // Lägger till instruktionerna
-                                AllRecipies.Add(line);
-                                break; //bryter o lämnar switch
-                            case RecipeReadStatus.Indefinite: // Blir ngt fel kastas undantaget nedan.
+                                aRecipe.Add(line); //Värdet som gavs på rad 146 läggs till i  aRecipe via (line) och loopar tills ALLA instruktioner är tillagda.
+                                break; //bryter o går tillbaka till första while
+                            case RecipeReadStatus.Indefinite: //Om den läser och ngt blir fel kastas undantaget nedan.
                                 throw new FileFormatException(); //undantag
                         }
                     }
                 }
-                recipes.TrimExcess(); // tar bort det tomma i arrayen.
                 _recipes = recipes.OrderBy(recipe => recipe.Name).ToList(); // Sorterar listan baserad på namnen. Tilldelar en referens till listan i  fältet i _recipes.
-                IsModified = false; // tilldelar att listan är oförändrad.
-                OnRecipesChanged(EventArgs.Empty); //när receptet startas skickas detta med
+                IsModified = false; //Citerar PDF:en "Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar att listan med recept 
+                                    //är oförändrad." = False löser detta.
+                OnRecipesChanged(EventArgs.Empty); // Citerar PDF:en "Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipesChanged och 
+                                                   //skicka med parametern EventArgs.Empty."
             }
         }
-        public void Save() // Koden nedan är för att man ska kunna spara recept.
+        public void Save() // Koden nedan är för att man ska kunna spara recept. Skapar en public void med namnet save.
         {
-            using (StreamWriter writer = new StreamWriter(_path))
+            using (StreamWriter writer = new StreamWriter(_path)) // Använder streamwriter och går till där .txt filen finns (_Path)
             {
                 foreach (Recipe recipe in _recipes) // För varje recept i _recipes skriv recepten.
                 {
-                    writer.WriteLine(SectionRecipe); // SKriver recptets namn
-                    writer.WriteLine(recipe.Name);
+                    writer.WriteLine(SectionRecipe); 
+                    writer.WriteLine(recipe.Name); // Skriver receptets namn.
                     writer.WriteLine(SectionIngredients); // Skriver ingredienserna.
-                    foreach(Ingredient ingredient in recipe.Ingredients)
+                    foreach(Ingredient ingredient in recipe.Ingredients) // För varje ingrediens i ingrediens
                     {
                         writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name); // 0 = mängd 1 = mått 2  namn
                     }
                     writer.WriteLine(SectionInstructions); // Skriver instruktionerna.
                     foreach (string instructions in recipe.Instructions)  // för varje instruktion i recipe.Instructions skriv instruktionerna.
                     {
-                        writer.WriteLine(instructions);
+                        writer.WriteLine(instructions); //Skriver ut instruktionerna.
                     }
                 }
-                IsModified = false;
-                OnRecipesChanged(EventArgs.Empty); //Basklassen för data är tom om ett recept har ändrats.
+                IsModified = false; //Citerar PDF:en "Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar att listan med recept 
+                                   //är oförändrad." = False löser detta.
+                OnRecipesChanged(EventArgs.Empty); // "Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipesChanged och 
+                                                   //  skicka med parametern EventArgs.Empty." - citerat från PDF:en
             }
         }
     }
